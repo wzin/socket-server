@@ -1,0 +1,8 @@
+*Usage of application:
+
+./server.py <xbee modem device>
+
+*Required modules:
+Application will ask for installation of required python modules.
+
+If standard python on MacOSX Lion does not have "easy_install" command, XCode with macports must be installed.
