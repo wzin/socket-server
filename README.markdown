@@ -39,7 +39,6 @@ Trying 10.0.0.100...
 Connected to 10.0.0.100.
 Escape character is '^]'.
 Hi - this is cesar request handler v.0.1('10.0.0.1', 35385)
----------------------- 
 Listening for commands 
 Hai
 Server answer: unknown command
