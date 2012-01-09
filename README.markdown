@@ -12,34 +12,29 @@ If standard python on MacOSX Lion does not have "easy_install" command, XCode wi
 #Sample communication 
 
 ##Server-side
-Wojciechs-MacBook-Pro:socket-server wojtek$ ./server.py /dev/ttys000 
+
+$./server.py /dev/ttys000 
 Attaching to /dev/ttys000
 B('10.0.0.1', 35385) connected!
-                               Received from client: Hai
-
+Received from client: Hai
 Unknown command
-               Received from client: WOT
-
+Received from client: WOT
 Unknown command
-               Received from client: WTF
-
+Received from client: WTF
 Unknown command
-               Received from client: HELLO WORLD
-
+Received from client: HELLO WORLD
 Unknown command
-               Received from client: lightOnRequest: true
-
+Received from client: lightOnRequest: true
 Sending command to xbee..
-Received from client:    A
-
+Received from client:    
+A
 Unknown command
-               Received from client: exit
-
+Received from client: exit
 ('10.0.0.1', 35385) disconnected!
 
 ##Client side
 
-root@wojtek-desktop:~# telnet 10.0.0.100 31415
+$telnet 10.0.0.100 31415
 Trying 10.0.0.100...
 Connected to 10.0.0.100.
 Escape character is '^]'.
@@ -55,7 +50,8 @@ Server answer: unknown command
 HELLO WORLD
 Server answer: unknown command
 lightOnRequest: true
-
+A
++OK
 Server answer: unknown command
 exit
 bye ('10.0.0.1', 35385)
