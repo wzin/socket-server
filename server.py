@@ -5,26 +5,19 @@ try:
   import SocketServer
 except ImportError:
   print 'Please install SocketServer module : sudo easy_install SocketServer'
-
-try:
-  from xbee import XBee
-except ImportError:
-  print 'Please install XBee module : sudo easy_install XBee'
-
 try:
   import serial
 except ImportError:
   print 'Please install serial module : sudo easy_install pySerial'
-import sys
+import sys,time
 
 if sys.argv[1]:
   '''Check whether we specified modem device '''
   serial_modem = sys.argv[1]
   print "Attaching to %s" % serial_modem
   try:
-    '''XBee initialization to 'ser' handler and to 'xbee' object'''
-    ser = serial.Serial(serial_modem, 9600)
-    xbee = XBee(ser)
+    '''device=<var serial_modem>, baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=None, '''
+    ser = serial.Serial(serial_modem, 9600, 8, 'N', 1)
     pass
   except serial.serialutil.SerialException,error:
     '''If the serial modem is invalid we have to throw an exception '''
@@ -52,14 +45,16 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
             '''start receiving data from client'''
             data = self.request.recv(1024)
             print "Received from client: %s" % data
-            if data.strip() == 'A':
-              '''If received 'A' letter from iphone, we send command to xbee'''
+            if data.strip() == 'lightOnRequest: true':
+              '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
-              xbee.send('lightOnRequest: true')
-            elif data.strip() == 'B':
-              '''If received 'B' letter from iphone, we send command to xbee'''
+              ser.write('A\r')
+              time.sleep(0.5)
+            elif data.strip() == 'lightOffRequest: true':
+              '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
-              xbee.send('lightOffRequest: true')
+              ser.write('B\r')
+              time.sleep(0.5)
             elif data.strip() == 'exit':
               ''' On exit - detach from serial device '''
               ser.close()
@@ -74,7 +69,7 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
         self.request.send('bye ' + str(self.client_address) + '\n')
 
 ''' Initially turn off the bulb '''
-xbee.send('lightOffRequest: true')
+ser.write('B')
 ''' Instantiate server '''
 server = SocketServer.ThreadingTCPServer(('', 31415), IphoneRequestHandler)
 ''' Start the server ''' 
