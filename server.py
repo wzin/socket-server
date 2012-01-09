@@ -49,11 +49,13 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
               '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
               ser.write('A\r')
+              self.request.send("+OK" + '\n')
               time.sleep(0.5)
             elif data.strip() == 'lightOffRequest: true':
               '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
               ser.write('B\r')
+              self.request.send("+OK" + '\n')
               time.sleep(0.5)
             elif data.strip() == 'exit':
               ''' On exit - detach from serial device '''
