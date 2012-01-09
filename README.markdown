@@ -13,8 +13,9 @@ If standard python on MacOSX Lion does not have "easy_install" command, XCode wi
 
 ##Server-side
 
+
 $./server.py /dev/ttys000
-`
+
 Attaching to /dev/ttys000
 
 B('10.0.0.1', 35385) connected!
@@ -48,10 +49,10 @@ Unknown command
 Received from client: exit
 
 ('10.0.0.1', 35385) disconnected!
-`
+
 
 ##Client side
-`
+
 $telnet 10.0.0.100 31415
 
 Trying 10.0.0.100...
@@ -93,5 +94,4 @@ exit
 bye ('10.0.0.1', 35385)
 
 Connection closed by foreign host.
-`
 
