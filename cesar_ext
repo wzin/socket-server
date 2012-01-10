@@ -9,7 +9,9 @@ try:
   import serial
 except ImportError:
   print 'Please install serial module : sudo easy_install pySerial'
-import sys,time
+import sys,time,os
+import thread,threading
+
 
 if sys.argv[1]:
   '''Check whether we specified modem device '''
@@ -18,7 +20,6 @@ if sys.argv[1]:
   try:
     '''device=<var serial_modem>, baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=None, '''
     ser = serial.Serial(serial_modem, 9600, 8, 'N', 1)
-    ser.timeout = 5
     pass
   except serial.serialutil.SerialException,error:
     '''If the serial modem is invalid we have to throw an exception '''
@@ -26,12 +27,39 @@ if sys.argv[1]:
     raise
 else:
   ''' If there's no serial modem given that raise exception '''
-  print 'Please provide working serial modem e.g. /dev/ttyUSB0'
+  print 'Please provide working serial modem e.g. /dev/ttyUSB0' 
   raise
+
+def safe_signal_send(info,sleeptime,signal): 
+    if threadlock.locked():
+      print "Resources locked"
+      time.sleep(sleeptime)
+      threadlock.acquire()
+      ser.write(signal)
+      threadlock.release()
+    else:
+      print info
+      threadlock.acquire()
+      ser.write(signal)
+      threadlock.release()
+
+def keepaliver_thread (threadname, sleeptime):
+    global ser,threadlock
+    while 1:
+      if threadlock.locked():
+        print "Wanted to send keepalive but resources were locked by command"
+      else:
+        threadlock.acquire()
+        print "%s Sending keepalive to Bulb" % (threadname)
+        ser.write('0\r')
+        time.sleep(0.2) 
+        threadlock.release()
+        time.sleep(sleeptime) 
 
 
 
 class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
+    thread.start_new_thread(keepaliver_thread, ("Keepalive_sender", 10))
     '''Iphone request handler class logic begins here '''
     def setup(self):
         '''Initial greeint sent to client after connection'''
@@ -49,18 +77,13 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
             
             if 'lightOnRequest: true' in data.strip() or 'on' in data.strip():
               '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
-              print "Sending command to xbee.."
-              ser.write('A\r')
-              self.request.send("+OK" + '\n')
-              time.sleep(0.2)
+              safe_signal_send('Sent command to Xbee',0.2,'A\r')
             elif 'lightOnRequest: false' in data.strip() or 'off' in data.strip():
               '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
-              print "Sending command to xbee.."
-              ser.write('B\r')
-              self.request.send("+OK" + '\n')
-              time.sleep(0.2)
-            elif 'exit' in data.strip():
+              safe_signal_send('Sent command to Xbee',0.2,'B\r')
+            elif 'exit' in data.strip() or 'shutdown' in data.strip():
               ''' On exit - detach from serial device '''
+              self.request.send("Server answer: unknown command" + '\n')
               return
             else:
               print 'Unknown command'
@@ -72,14 +95,16 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
         self.request.send('bye ' + str(self.client_address) + '\n')
 
 try:
+  threadlock = thread.allocate_lock()
   ''' Initially turn off the bulb '''
-  ser.write('B')
+  safe_signal_send('Sent command to Xbee',0.2,'B\r')
   ''' Instantiate server '''
   server = SocketServer.ThreadingTCPServer(('', 31415), IphoneRequestHandler)
-  ''' Start the server '''
-  server.serve_forever()
+  ''' Start the server ''' 
+  server.serve_forever() 
   ''' When finished - detach from modem device '''
 except KeyboardInterrupt:
-  server.shutdown()
+  ser.close()
   server.server_close()
-  print 'Bye bye'
+  server.shutdown()
+  print 'Bye bye :)'
