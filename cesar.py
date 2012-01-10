@@ -79,5 +79,5 @@ try:
   server.serve_forever() 
   ''' When finished - detach from modem device '''
   ser.close()
-except: KeyboardInterrupt
+except KeyboardInterrupt:
   print 'Bye bye'
