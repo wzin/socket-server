@@ -18,6 +18,7 @@ if sys.argv[1]:
   try:
     '''device=<var serial_modem>, baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=None, '''
     ser = serial.Serial(serial_modem, 9600, 8, 'N', 1)
+    ser.timeout = 5
     pass
   except serial.serialutil.SerialException,error:
     '''If the serial modem is invalid we have to throw an exception '''
@@ -45,26 +46,30 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
             '''start receiving data from client'''
             data = self.request.recv(1024)
             print "Received from client: %s" % data
-            if data.strip() == 'lightOnRequest: true' or data.strip() == 'on':
+            
+            if 'lightOnRequest: true' in data.strip() or 'on' in data.strip():
               '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
+              ser.open()
               ser.write('A\r')
               self.request.send("+OK" + '\n')
-              time.sleep(0.5)
-            elif data.strip() == 'lightOffRequest: true' or data.strip() == 'off':
+              ser.close()
+              time.sleep(2)
+            elif 'lightOnRequest: false' in data.strip() or 'off' in data.strip():
               '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
+              ser.open()
               ser.write('B\r')
               self.request.send("+OK" + '\n')
-              time.sleep(0.5)
-            elif data.strip() == 'exit':
-              ''' On exit - detach from serial device '''
               ser.close()
+              time.sleep(2)
+            elif 'exit' in data.strip():
+              ''' On exit - detach from serial device '''
               return
             else:
               print 'Unknown command'
               self.request.send("Server answer: unknown command" + '\n')
-
+    
     def finish(self):
         ''' Some finish routines '''
         print self.client_address, 'disconnected!'
@@ -78,6 +83,5 @@ try:
   ''' Start the server ''' 
   server.serve_forever() 
   ''' When finished - detach from modem device '''
-  ser.close()
 except KeyboardInterrupt:
   print 'Bye bye'
