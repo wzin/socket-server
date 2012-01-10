@@ -50,19 +50,15 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
             if 'lightOnRequest: true' in data.strip() or 'on' in data.strip():
               '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
-              ser.open()
               ser.write('A\r')
               self.request.send("+OK" + '\n')
-              ser.close()
-              time.sleep(2)
+              time.sleep(0.2)
             elif 'lightOnRequest: false' in data.strip() or 'off' in data.strip():
               '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
-              ser.open()
               ser.write('B\r')
               self.request.send("+OK" + '\n')
-              ser.close()
-              time.sleep(2)
+              time.sleep(0.2)
             elif 'exit' in data.strip():
               ''' On exit - detach from serial device '''
               return
