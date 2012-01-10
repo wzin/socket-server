@@ -45,13 +45,13 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
             '''start receiving data from client'''
             data = self.request.recv(1024)
             print "Received from client: %s" % data
-            if data.strip() == 'lightOnRequest: true':
+            if data.strip() == 'lightOnRequest: true' or data.strip() == 'on':
               '''If received 'lightOnRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
               ser.write('A\r')
               self.request.send("+OK" + '\n')
               time.sleep(0.5)
-            elif data.strip() == 'lightOffRequest: true':
+            elif data.strip() == 'lightOffRequest: true' or data.strip() == 'off':
               '''If received 'lightOffRequest: true' letter from iphone, we send command to xbee'''
               print "Sending command to xbee.."
               ser.write('B\r')
@@ -70,11 +70,14 @@ class IphoneRequestHandler(SocketServer.BaseRequestHandler ):
         print self.client_address, 'disconnected!'
         self.request.send('bye ' + str(self.client_address) + '\n')
 
-''' Initially turn off the bulb '''
-ser.write('B')
-''' Instantiate server '''
-server = SocketServer.ThreadingTCPServer(('', 31415), IphoneRequestHandler)
-''' Start the server ''' 
-server.serve_forever() 
-''' When finished - detach from modem device '''
-ser.close()
+try:
+  ''' Initially turn off the bulb '''
+  ser.write('B')
+  ''' Instantiate server '''
+  server = SocketServer.ThreadingTCPServer(('', 31415), IphoneRequestHandler)
+  ''' Start the server ''' 
+  server.serve_forever() 
+  ''' When finished - detach from modem device '''
+  ser.close()
+except: KeyboardInterrupt
+  print 'Bye bye'
